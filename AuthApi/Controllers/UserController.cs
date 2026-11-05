@@ -39,4 +39,47 @@ public class UserController : ControllerBase
         
         return StatusCode(200, users);
     }
+
+    [HttpGet("user/{id}")]
+    public async Task<IActionResult> GetUser([FromRoute] Guid id)
+    {
+        var user = await _context.Users.SingleOrDefaultAsync(u => u.Id == id);
+
+        if (user == null) return StatusCode(404,  "User not found");
+        
+        return StatusCode(200, user);
+    }
+
+    [HttpPost("upateUser")]
+    public async Task<IActionResult> UpdateUser([FromQuery] Guid id, [FromBody] UpdateUserDto updateUserDto)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        
+        if (user == null) return StatusCode(404,  "User not found");
+        
+        else if (user != null)
+        {
+            user.Name = updateUserDto.Name;
+            user.Email = updateUserDto.Email;
+            user.Password = updateUserDto.Password;
+
+            _context.Users.Update(user);
+            return StatusCode(200, user);
+        }
+        
+        return StatusCode(400,  "User not found");
+    }
+
+    [HttpDelete("deleteUser/{id}")]
+    public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        
+        if (user == null) return StatusCode(404,  "User not found");
+
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+        
+        return StatusCode(200, "User successfully deleted");
+    }
 }
